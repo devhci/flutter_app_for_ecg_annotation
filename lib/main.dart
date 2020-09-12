@@ -1,13 +1,18 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_images_slider/flutter_images_slider.dart';
+import 'package:csv/csv.dart';
+
+import 'package:path_provider/path_provider.dart';
 
 void main() => runApp(MyApp());
 
 final List<String> imgList = [
   'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
+  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/10/images/off_29_38242748-38273468_z2y4b9%40cachet.dk_P2_day10.png?raw=true',
+  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/10/images/on_8_25607613-25638333_z2y4b9%40cachet.dk_P2_day10.png?raw=true',
   'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
   'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
   'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
@@ -125,6 +130,8 @@ class _MyHomePageState extends State<MyHomePage> {
   int last = 0;
   int _current = 0;
 
+  var info;
+
   bool _value1 = false;
   bool _value2 = false;
 
@@ -165,29 +172,54 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Stack(children: [
         Padding(
             padding: EdgeInsets.symmetric(vertical: 0.0),
-            child: ImagesSlider(
-              items: map<Widget>(imgList, (index, i) {
-                // print(index);
-                return Container(
-                  decoration: BoxDecoration(
-                      image: DecorationImage(
-                          image: NetworkImage(i), fit: BoxFit.cover)),
-                );
-              }),
-              // autoPlay: true,
-              viewportFraction: 1.0,
-              aspectRatio: 2.0,
-              distortion: false,
-              align: IndicatorAlign.bottom,
-              indicatorWidth: 5,
-              updateCallback: (index) {
-                setState(() {
-                  _current = index;
-                  print("index= " + index.toString());
+            child: InteractiveViewer(
+              child: ImagesSlider(
+                items: map<Widget>(imgList, (index, i) {
+                  // print(index);
+                  return Container(
+                    decoration: BoxDecoration(
+                        image: DecorationImage(
+                            image: NetworkImage(i), fit: BoxFit.cover)),
+                  );
+                }),
+                // autoPlay: true,
+                viewportFraction: 1.0,
+                aspectRatio: 2.0,
+                distortion: false,
+                align: IndicatorAlign.bottom,
+                indicatorWidth: 5,
+                updateCallback: (index) {
+                  setState(() {
+                    var str = imgList[index];
+                    var s = str.split("/images/")[1].split("_")[0];
 
-                  ///print(last);
+                    switch (s) {
+                      case "m":
+                        {
+                          info = "Random sample between an onset and offset";
+                        }
+                        break;
+                      case "on":
+                        {
+                          info = "AF Onset";
+                        }
+                        break;
 
-                  ///
+                      case "off":
+                        {
+                          info = "AF Offset";
+                        }
+                        break;
+                    }
+
+                    print(imgList[index]);
+
+                    _current = index;
+                    print("index= " + index.toString());
+
+                    ///print(last);
+
+                    ///
 //                  if (index > last) {
 //                    if (nsr == true) mapOfLabels[last] = "nsr";
 //
@@ -202,68 +234,69 @@ class _MyHomePageState extends State<MyHomePage> {
 //                    noise = false;
 //                    other = false;
 //                  } else {
-                  String label = mapOfLabels[index];
-                  print("came inside else with lable = " + label);
+                    String label = mapOfLabels[index];
+                    print("came inside else with lable = " + label);
 
-                  switch (label) {
-                    case "af":
-                      {
-                        af = true;
-                        noise = false;
-                        other = false;
-                        nsr = false;
-                        print("came inside switch af");
-                      }
-                      break;
+                    switch (label) {
+                      case "af":
+                        {
+                          af = true;
+                          noise = false;
+                          other = false;
+                          nsr = false;
+                          print("came inside switch af");
+                        }
+                        break;
 
-                    case "noise":
-                      {
-                        //statements;
+                      case "noise":
+                        {
+                          //statements;
 
-                        noise = true;
-                        af = false;
+                          noise = true;
+                          af = false;
 
-                        other = false;
-                        nsr = false;
-                        print("came inside switch noise");
-                      }
-                      break;
+                          other = false;
+                          nsr = false;
+                          print("came inside switch noise");
+                        }
+                        break;
 
-                    case "other":
-                      {
-                        other = true;
-                        af = false;
-                        noise = false;
+                      case "other":
+                        {
+                          other = true;
+                          af = false;
+                          noise = false;
 
-                        nsr = false;
-                        print("came inside switch other");
-                      }
-                      break;
+                          nsr = false;
+                          print("came inside switch other");
+                        }
+                        break;
 
-                    case "nsr":
-                      {
-                        //statements;
-                        nsr = true;
-                        noise = false;
-                        other = false;
-                        af = false;
-                        print("came inside switch nsr");
-                      }
-                      break;
+                      case "nsr":
+                        {
+                          //statements;
+                          nsr = true;
+                          noise = false;
+                          other = false;
+                          af = false;
+                          print("came inside switch nsr");
+                        }
+                        break;
 
-                    case "null":
-                      {
-                        af = false;
-                        noise = false;
-                        other = false;
-                        nsr = false;
-                      }
-                      break;
-                  }
+                      case "null":
+                        {
+                          af = false;
+                          noise = false;
+                          other = false;
+                          nsr = false;
+                        }
+                        break;
+                    }
 
-                  // if (index > index) print(imgList[index]);
-                });
-              },
+                    // if (index > index) print(imgList[index]);
+                  });
+                },
+              ),
             )), // new Checkbox(value: _value1, onChanged: _value1Changed),
         //  new Checkbox(value: _value1, onChanged: _value1Changed),
 
@@ -362,16 +395,77 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
         ),
+
+        Container(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              //mainAxisAlignment: alin,
+              children: [
+                Text("$info", style: TextStyle(height: 5, fontSize: 15))
+              ],
+            ),
+          ),
+        ),
       ]),
 
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           // Add your onPressed code here!
+
+          print(mapOfLabels);
+
+          makeCSVfromlables(mapOfLabels, imgList);
         },
         label: Text('Save'),
         icon: Icon(Icons.save),
         backgroundColor: Colors.greenAccent,
       ),
     );
+  }
+
+  Future<File> get _localFile async {
+    final path = await _localPath;
+    return File('$path/counter.txt');
+  }
+
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    return directory.path;
+  }
+
+  makeCSVfromlables(Map<int, String> mapofLabels, List<String> imgList) async {
+    var fileName = 'labels.csv';
+
+    Directory tempDir = await getTemporaryDirectory();
+    final File file = File("${tempDir.path}/$fileName");
+
+    List<List<dynamic>> outer = List();
+    for (int i = 0; i < mapofLabels.length; i++) {
+      if (mapOfLabels[i] != null) {
+        {
+          var str = imgList[i];
+          List<dynamic> yourListOfLists = [
+            str.split("/images/")[1].split('?')[0],
+            mapOfLabels[i]
+          ];
+          outer.add(yourListOfLists);
+        }
+
+        String csv = const ListToCsvConverter().convert(outer);
+        // print(csv);
+
+        File result = await file.writeAsString('$csv');
+
+        if (result == null) {
+          print("Writing to file failed");
+        } else {
+          print("Successfully writing to file");
+        }
+
+        print(csv);
+      }
+    }
   }
 }

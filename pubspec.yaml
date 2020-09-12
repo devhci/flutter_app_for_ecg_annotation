@@ -33,6 +33,10 @@ dependencies:
   flutter_images_slider: ^0.0.2
   grouped_buttons: ^1.0.4
 
+  path_provider: ^1.6.14
+
+  csv: ^4.0.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
