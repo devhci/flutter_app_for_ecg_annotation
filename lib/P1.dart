@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -7,86 +8,35 @@ import 'package:csv/csv.dart';
 
 import 'package:path_provider/path_provider.dart';
 
-void main() => runApp(MyApp());
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+
+import 'package:flash/flash.dart';
+import 'package:uuid/uuid.dart';
+import 'package:csv_reader/csv_reader.dart';
+
+import 'dart:typed_data';
+import 'dart:io';
+
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+
+import 'home.dart';
 
 final List<String> imgList = [
+  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/10/images/on_8_25607613-25638333_z2y4b9%40cachet.dk_P2_day10.png?raw=true',
+  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
+  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
   'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
   'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/10/images/off_29_38242748-38273468_z2y4b9%40cachet.dk_P2_day10.png?raw=true',
   'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/10/images/on_8_25607613-25638333_z2y4b9%40cachet.dk_P2_day10.png?raw=true',
   'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
   'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
   'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
+  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/10/images/off_29_38242748-38273468_z2y4b9%40cachet.dk_P2_day10.png?raw=true',
+  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/10/images/on_8_25607613-25638333_z2y4b9%40cachet.dk_P2_day10.png?raw=true',
   'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_1400297-1431017_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
-  'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
   'https://github.com/devhci/af_images/blob/master/P2/z2y4b9%40cachet.dk/1/images/m_2_773060-803780_z2y4b9%40cachet.dk_P2_day1.png?raw=true',
 ];
 
@@ -97,25 +47,6 @@ List<T> map<T>(List list, Function handler) {
   }
 
   return result;
-}
-
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-
-    return new MaterialApp(
-//      title: 'Flutter Demo',
-//      theme: new ThemeData(
-//        primarySwatch: Colors.blue,
-//      ),
-      home: new MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
 }
 
 class MyHomePage extends StatefulWidget {
@@ -153,9 +84,102 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
 
+    _sharedPref();
+
+    //loadAsset();
+    readCSV();
+
     print("length" + imgList.length.toString());
 
     for (int i = 0; i < imgList.length; i++) mapOfLabels[i] = "null";
+  }
+
+  _sharedPref() async {
+    var uuid = new Uuid();
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (prefs.get("uuid") == null) prefs.setString("uuid", uuid.v1());
+  }
+
+  readCSV() async {
+    StorageReference storageReference;
+    String uuid;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (prefs.get("uuid") != null) uuid = prefs.get("uuid");
+
+    storageReference =
+        FirebaseStorage.instance.ref().child("$uuid/patients/P2");
+
+    //storageReference.getData(100000);
+
+    var url = await storageReference.getDownloadURL();
+    print(url);
+    loadAsset(url);
+
+    //print(storageReference.getDownloadURL());
+
+//    print("printing {7,0}" + myCSV[7][0].toString());
+//
+//    for (int i = 0; i < myCSV.rowsCount; i++)
+//      for (int j = 0; j < myCSV.columnCount; j++) print(myCSV[i][j]);
+  }
+
+  loadAsset(var url) async {
+    var f = await downloadFile(url, "list.csv");
+//
+//    final input = f.openRead();
+//    final fields = await input
+//        .transform(utf8.decoder)
+//        .transform(new CsvToListConverter())
+//        .toList();
+//
+//    print(fields);
+  }
+
+  Future<File> downloadFile(String url, String filename) async {
+    var httpClient = http.Client();
+    var request = new http.Request('GET', Uri.parse(url));
+    var response = httpClient.send(request);
+    String dir = (await getApplicationDocumentsDirectory()).path;
+
+    List<List<int>> chunks = new List();
+    int downloaded = 0;
+
+    response.asStream().listen((http.StreamedResponse r) {
+      r.stream.listen((List<int> chunk) {
+        // Display percentage of completion
+        debugPrint('downloadPercentage: ${downloaded / r.contentLength * 100}');
+
+        chunks.add(chunk);
+        downloaded += chunk.length;
+      }, onDone: () async {
+        // Display percentage of completion
+        debugPrint('downloadPercentage: ${downloaded / r.contentLength * 100}');
+
+        // Save the file
+        File file = new File('$dir/$filename');
+        final Uint8List bytes = Uint8List(r.contentLength);
+        int offset = 0;
+        for (List<int> chunk in chunks) {
+          bytes.setRange(offset, offset + chunk.length, chunk);
+          offset += chunk.length;
+        }
+
+        await file.writeAsBytes(bytes);
+
+        final input = file.openRead();
+        final fields = await input
+            .transform(utf8.decoder)
+            .transform(new CsvToListConverter())
+            .toList();
+
+        print(fields);
+
+        return file;
+      });
+    });
   }
 
   @override
@@ -165,9 +189,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+
     return new Scaffold(
 //      appBar: new AppBar(
-//        title: new Text(widget.title),
+//        title: new Text("Hello"),
+//        backgroundColor: Colors.transparent,
 //      ),
       body: Stack(children: [
         Padding(
@@ -408,7 +438,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
       ]),
-
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           // Add your onPressed code here!
@@ -444,28 +473,125 @@ class _MyHomePageState extends State<MyHomePage> {
     List<List<dynamic>> outer = List();
     for (int i = 0; i < mapofLabels.length; i++) {
       if (mapOfLabels[i] != null) {
-        {
-          var str = imgList[i];
-          List<dynamic> yourListOfLists = [
-            str.split("/images/")[1].split('?')[0],
-            mapOfLabels[i]
-          ];
-          outer.add(yourListOfLists);
-        }
-
-        String csv = const ListToCsvConverter().convert(outer);
-        // print(csv);
-
-        File result = await file.writeAsString('$csv');
-
-        if (result == null) {
-          print("Writing to file failed");
-        } else {
-          print("Successfully writing to file");
-        }
-
-        print(csv);
+        var str = imgList[i];
+        List<dynamic> yourListOfLists = [
+          i,
+          str.split("/images/")[1].split('?')[0],
+          mapOfLabels[i]
+        ];
+        outer.add(yourListOfLists);
       }
+    }
+
+    String csv = const ListToCsvConverter().convert(outer);
+    // print(csv);
+
+    File result = await file.writeAsString('$csv');
+
+    if (result == null) {
+      print("Writing to file failed");
+    } else {
+      print("Successfully writing to file");
+
+      print(" path of the created file" + result.path);
+      //Alert(context: context, title: "RFLUTTER", desc: "Flutter is awesome.")
+      _showCenterFlash(alignment: Alignment.center);
+    }
+
+    _uploadFile(result, "P2");
+    print(csv);
+  }
+
+  void _showCenterFlash({
+    FlashPosition position,
+    FlashStyle style,
+    Alignment alignment,
+  }) {
+    showFlash(
+      context: context,
+      duration: Duration(seconds: 2),
+      builder: (_, controller) {
+        return Flash(
+          controller: controller,
+          backgroundColor: Colors.green,
+          borderRadius: BorderRadius.circular(8.0),
+          borderColor: Colors.blue,
+          position: position,
+          style: style,
+          alignment: alignment,
+          enableDrag: false,
+          onTap: () => controller.dismiss(),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: DefaultTextStyle(
+              style: TextStyle(color: Colors.white),
+              child: Text(
+                'File has been Saved',
+              ),
+            ),
+          ),
+        );
+      },
+    ).then((_) {
+      if (_ != null) {
+        _showMessage(_.toString());
+      }
+    });
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) return;
+    showFlash(
+        context: context,
+        duration: Duration(seconds: 3),
+        builder: (_, controller) {
+          return Flash(
+            controller: controller,
+            position: FlashPosition.top,
+            style: FlashStyle.grounded,
+            child: FlashBar(
+              icon: Icon(
+                Icons.face,
+                size: 36.0,
+                color: Colors.black,
+              ),
+              message: Text(message),
+            ),
+          );
+        });
+  }
+
+  Future<void> _uploadFile(File file, String patient) async {
+    StorageReference storageReference;
+    String uuid;
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if (prefs.get("uuid") != null) uuid = prefs.get("uuid");
+
+    //uuid = uuid + "--" + DateTime.now().toUtc().toString();
+
+    String day = DateTime.now().day.toString() +
+        "-" +
+        DateTime.now().month.toString() +
+        "-" +
+        DateTime.now().year.toString();
+
+    storageReference =
+        FirebaseStorage.instance.ref().child("$uuid/patients/$patient/");
+
+    //storageReference.getData(100000);
+
+    storageReference.getDownloadURL();
+
+    final StorageUploadTask uploadTask = storageReference.putFile(file);
+
+    final StorageTaskSnapshot downloadUrl = (await uploadTask.onComplete);
+    final String url = (await downloadUrl.ref.getDownloadURL());
+    print("URL is $url");
+
+    if (downloadUrl != null) {
+      file.delete();
     }
   }
 }
