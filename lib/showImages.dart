@@ -81,13 +81,13 @@ class _ShowImagesState extends State<ShowImages> {
 
     _sharedPref();
 
-    Future.delayed(Duration.zero, () {
-      setState(() {
-        patient = ModalRoute.of(context).settings.arguments;
-      });
-      print(patient);
-      readCSV(patient);
-    });
+//    Future.delayed(Duration.zero, () {
+//      setState(() {
+//        patient = ModalRoute.of(context).settings.arguments;
+//      });
+//      print(patient);
+//      //readCSV(patient);
+//    });
 
     //loadAsset();
     readCSV(patinetId);
@@ -110,8 +110,9 @@ class _ShowImagesState extends State<ShowImages> {
 
     if (prefs.get("uuid") != null) uuid = prefs.get("uuid");
 
-    storageReference =
-        FirebaseStorage.instance.ref().child("$uuid/patients/$patient_id");
+    storageReference = FirebaseStorage.instance
+        .ref()
+        .child("$uuid/patients/$patient_id" + ".csv");
 
     //storageReference.getData(100000);
     try {
@@ -159,7 +160,7 @@ class _ShowImagesState extends State<ShowImages> {
       });
 
       // print(url);
-      await downloadFile(url, "list.csv");
+      await downloadFile(url, patient_id + ".csv");
     } catch (e) {
       print("Patient does not exists");
       print(url);
@@ -218,9 +219,9 @@ class _ShowImagesState extends State<ShowImages> {
         print(fields);
 
         for (int i = 0; i < fields.length; i++) {
-          imgList.add(fields[i].elementAt(1));
-          mapOfLabels[i] = fields[i].elementAt(3);
-          print(fields[i].elementAt(1) + " " + fields[i].elementAt(3));
+          imgList.add(fields[i].elementAt(0));
+          mapOfLabels[i] = fields[i].elementAt(2);
+          print(fields[i].elementAt(0) + " " + fields[i].elementAt(2));
         }
 
         setState(() {
@@ -536,7 +537,6 @@ class _ShowImagesState extends State<ShowImages> {
       if (mapOfLabels[i] != null) {
         var str = imgList[i];
         List<dynamic> yourListOfLists = [
-          i,
           imgList[i],
           str.split("/images/")[1].split('?')[0],
           mapOfLabels[i]
