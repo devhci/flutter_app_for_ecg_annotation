@@ -47,6 +47,8 @@ class _ShowImagesState extends State<ShowImages> {
   //String root_name="dr_kamal";
   String root_name = "helena_dk";
 
+  bool isButtonenable = true;
+
   int last = 0;
   int _current = 0;
 
@@ -260,7 +262,7 @@ class _ShowImagesState extends State<ShowImages> {
 //      ),
         body: Stack(children: [
           Padding(
-              padding: EdgeInsets.symmetric(vertical: 0.0),
+              padding: EdgeInsets.only(top: 0, left: 0, right: 0),
               child: InteractiveViewer(
                 child: ImagesSlider(
                   items: map<Widget>(imgList, (index, i) {
@@ -268,15 +270,18 @@ class _ShowImagesState extends State<ShowImages> {
                     return Container(
                       decoration: BoxDecoration(
                           image: DecorationImage(
-                              image: NetworkImage(i), fit: BoxFit.cover)),
+                              image: NetworkImage(i), fit: BoxFit.scaleDown)),
                     );
                   }),
                   // autoPlay: true,
-                  viewportFraction: 1.0,
-                  aspectRatio: 2.0,
+                  viewportFraction: 1.3,
+                  //realPage: ,
+                  aspectRatio: 1,
                   distortion: false,
+                  initialPage: 0,
                   align: IndicatorAlign.bottom,
-                  indicatorWidth: 5,
+                  indicatorWidth: 0,
+
                   updateCallback: (index) {
                     setState(() {
                       var str = imgList[index];
@@ -486,29 +491,33 @@ class _ShowImagesState extends State<ShowImages> {
           ),
 
           Container(
+            padding: const EdgeInsets.only(top: 20),
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 //mainAxisAlignment: alin,
                 children: [
-                  Text("$info", style: TextStyle(height: 5, fontSize: 15))
+                  Text("Count= $_current",
+                      style: TextStyle(height: 5, fontSize: 15))
                 ],
               ),
             ),
           ),
         ]),
         floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            // Add your onPressed code here!
+          onPressed: isButtonenable
+              ? () {
+                  // Add your onPressed code here!
 
-            print(mapOfLabels);
+                  print(mapOfLabels);
 
-            makeCSVfromlables(
-                mapOfLabels, imgList, widget.patientId.toString());
-          },
+                  makeCSVfromlables(
+                      mapOfLabels, imgList, widget.patientId.toString());
+                }
+              : null,
           label: Text('Save'),
           icon: Icon(Icons.save),
-          backgroundColor: Colors.greenAccent,
+          backgroundColor: isButtonenable ? Colors.green : Colors.white70,
         ),
       ),
     );
@@ -528,6 +537,10 @@ class _ShowImagesState extends State<ShowImages> {
   makeCSVfromlables(Map<int, String> mapofLabels, List<String> imgList,
       String patientId) async {
     var fileName = 'labels.csv';
+
+    setState(() {
+      isButtonenable = false;
+    });
 
     Directory tempDir = await getTemporaryDirectory();
     final File file = File("${tempDir.path}/$fileName");
@@ -557,7 +570,7 @@ class _ShowImagesState extends State<ShowImages> {
 
       print(" path of the created file" + result.path);
       //Alert(context: context, title: "RFLUTTER", desc: "Flutter is awesome.")
-      _showCenterFlash(alignment: Alignment.center);
+
     }
 
     _uploadFile(result, patientId);
@@ -627,6 +640,8 @@ class _ShowImagesState extends State<ShowImages> {
     StorageReference storageReference;
     String uuid;
 
+    CircularProgressIndicator();
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     if (prefs.get("uuid") != null) uuid = prefs.get("uuid");
@@ -639,8 +654,9 @@ class _ShowImagesState extends State<ShowImages> {
         "-" +
         DateTime.now().year.toString();
 
-    storageReference =
-        FirebaseStorage.instance.ref().child("$uuid/patients/$patient/");
+    storageReference = FirebaseStorage.instance
+        .ref()
+        .child("$uuid/patients/$patient" + ".csv");
 
     //storageReference.getData(100000);
 
@@ -653,7 +669,12 @@ class _ShowImagesState extends State<ShowImages> {
     print("URL is $url");
 
     if (downloadUrl != null) {
+      setState(() {
+        isButtonenable = true;
+      });
+      _showCenterFlash(alignment: Alignment.center);
       file.delete();
+      //CircularProgressIndicator()
     }
   }
 }
