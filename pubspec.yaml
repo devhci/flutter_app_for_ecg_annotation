@@ -1,5 +1,5 @@
-name: ecg_annotation_app
-description: ecg_annotation_app
+name: ECG_Annotation
+description: ECG_Annotation
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
@@ -44,6 +44,7 @@ dependencies:
   flash: "^1.2.0"
   azlistview: ^1.0.1
   adaptive_dialog: ^0.8.0+1
+  flutter_launcher_icons: ^0.8.1
 
   csv: ^4.0.3
   csv_reader: ^1.0.2
@@ -56,6 +57,15 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter.
+
+flutter_icons:
+  ios: true
+  android: true
+  image_path_ios: "assets/icon.png"
+  image_path_android: "assets/icon.png"
+
+
+
 flutter:
 
   # The following line ensures that the Material Icons font is

@@ -44,13 +44,17 @@ class ShowImages extends StatefulWidget {
 }
 
 class _ShowImagesState extends State<ShowImages> {
-  //String root_name="dr_kamal";
+  //String root_name = "dr_kamal";
   String root_name = "helena_dk";
 
   bool isButtonenable = true;
+  int startIndex = 0;
 
   int last = 0;
   int _current = 0;
+
+  int total = 0;
+  String patinetId;
 
   var info;
   var url = null;
@@ -61,7 +65,10 @@ class _ShowImagesState extends State<ShowImages> {
   bool af = false;
   bool nsr = false;
   bool noise = false;
+  bool PVC = false;
+  bool flutter = false;
   bool other = false;
+  bool sa = false;
   String patient;
 
   Map<int, String> mapOfLabels = Map();
@@ -78,7 +85,7 @@ class _ShowImagesState extends State<ShowImages> {
     super.initState();
 
     //widget.patientId;
-    String patinetId = widget.patientId.toString();
+    this.patinetId = widget.patientId.toString();
     print("PatientId= " + widget.patientId.toString());
 
     _sharedPref();
@@ -102,6 +109,20 @@ class _ShowImagesState extends State<ShowImages> {
   _sharedPref() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.get("uuid") == null) prefs.setString("uuid", root_name);
+
+    if (prefs.get(patinetId) == null) {
+      prefs.setInt(patinetId, 0);
+      setState(() {
+        startIndex = prefs.get(patinetId);
+        //_current = startIndex;
+        //index=_current;
+      });
+    } else
+      setState(() {
+        startIndex = prefs.get(patinetId);
+        //_current = startIndex;
+        //index=_current;
+      });
   }
 
   readCSV(String patient_id) async {
@@ -187,6 +208,8 @@ class _ShowImagesState extends State<ShowImages> {
     var response = httpClient.send(request);
     String dir = (await getApplicationDocumentsDirectory()).path;
 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
     List<List<int>> chunks = new List();
     int downloaded = 0;
 
@@ -218,7 +241,13 @@ class _ShowImagesState extends State<ShowImages> {
             .transform(new CsvToListConverter())
             .toList();
 
-        print(fields);
+        print(fields.length);
+        setState(() {
+          total = fields.length;
+        });
+
+        imgList.removeAt(
+            0); //Remove First default element which is just from avaoiding device by zero index error
 
         for (int i = 0; i < fields.length; i++) {
           imgList.add(fields[i].elementAt(0));
@@ -266,7 +295,7 @@ class _ShowImagesState extends State<ShowImages> {
               child: InteractiveViewer(
                 child: ImagesSlider(
                   items: map<Widget>(imgList, (index, i) {
-                    // print(index);
+                    print("Index here " + index.toString());
                     return Container(
                       decoration: BoxDecoration(
                           image: DecorationImage(
@@ -278,11 +307,12 @@ class _ShowImagesState extends State<ShowImages> {
                   //realPage: ,
                   aspectRatio: 1,
                   distortion: false,
-                  initialPage: 0,
+                  initialPage: startIndex,
                   align: IndicatorAlign.bottom,
-                  indicatorWidth: 0,
+                  indicatorWidth: 10,
 
                   updateCallback: (index) {
+                    print("Index inside callback " + index.toString());
                     setState(() {
                       var str = imgList[index];
                       var s = str.split("/images/")[1].split("_")[0];
@@ -311,23 +341,6 @@ class _ShowImagesState extends State<ShowImages> {
                       _current = index;
                       print("index= " + index.toString());
 
-                      ///print(last);
-
-                      ///
-//                  if (index > last) {
-//                    if (nsr == true) mapOfLabels[last] = "nsr";
-//
-//                    if (other == true) mapOfLabels[last] = "other";
-//
-//                    if (af == true) mapOfLabels[last] = "af";
-//
-//                    if (noise == true) mapOfLabels[last] = 'noise';
-//
-//                    af = false;
-//                    nsr = false;
-//                    noise = false;
-//                    other = false;
-//                  } else {
                       String label = mapOfLabels[index];
                       print("came inside else with lable = " + label);
 
@@ -336,8 +349,11 @@ class _ShowImagesState extends State<ShowImages> {
                           {
                             af = true;
                             noise = false;
-                            other = false;
+                            PVC = false;
                             nsr = false;
+                            flutter = false;
+                            other = false;
+                            sa = false;
                             print("came inside switch af");
                           }
                           break;
@@ -349,20 +365,26 @@ class _ShowImagesState extends State<ShowImages> {
                             noise = true;
                             af = false;
 
-                            other = false;
+                            PVC = false;
                             nsr = false;
+                            flutter = false;
+                            other = false;
+                            sa = false;
                             print("came inside switch noise");
                           }
                           break;
 
-                        case "other":
+                        case "PVC":
                           {
-                            other = true;
+                            PVC = true;
                             af = false;
                             noise = false;
 
                             nsr = false;
-                            print("came inside switch other");
+                            flutter = false;
+                            other = false;
+                            sa = false;
+                            print("came inside switch PVC");
                           }
                           break;
 
@@ -371,9 +393,57 @@ class _ShowImagesState extends State<ShowImages> {
                             //statements;
                             nsr = true;
                             noise = false;
-                            other = false;
+                            PVC = false;
                             af = false;
+                            flutter = false;
+                            other = false;
+                            sa = false;
                             print("came inside switch nsr");
+                          }
+                          break;
+
+                        case "flutter":
+                          {
+                            //statements;
+                            flutter = true;
+                            nsr = false;
+                            noise = false;
+                            PVC = false;
+                            af = false;
+                            other = false;
+                            sa = false;
+
+                            print("came inside switch flutter");
+                          }
+                          break;
+
+                        case "other":
+                          {
+                            //statements;
+                            other = true;
+                            flutter = false;
+                            nsr = false;
+                            noise = false;
+                            PVC = false;
+                            af = false;
+                            sa = false;
+
+                            print("came inside switch other");
+                          }
+                          break;
+
+                        case "sa":
+                          {
+                            //statements;
+                            sa = true;
+                            other = false;
+                            flutter = false;
+                            nsr = false;
+                            noise = false;
+                            PVC = false;
+                            af = false;
+
+                            print("came inside switch SA");
                           }
                           break;
 
@@ -381,8 +451,11 @@ class _ShowImagesState extends State<ShowImages> {
                           {
                             af = false;
                             noise = false;
-                            other = false;
+                            PVC = false;
                             nsr = false;
+                            flutter = false;
+                            other = false;
+                            sa = false;
                           }
                           break;
                       }
@@ -395,33 +468,92 @@ class _ShowImagesState extends State<ShowImages> {
           //  new Checkbox(value: _value1, onChanged: _value1Changed),
 
           Container(
-            padding: EdgeInsets.only(left: 2, top: 40),
+            padding: EdgeInsets.only(left: 2, top: 5),
             child: Column(
               children: [
-                Row(
-                  children: <Widget>[
-                    Checkbox(
-                      value: other,
-                      onChanged: (bool newValue) {
-                        setState(() {
-                          print(_current);
-                          other = newValue;
-
-                          if (other == true) {
-                            mapOfLabels[_current] = "other";
-
-                            af = false;
-                            nsr = false;
-                            noise = false;
-                          }
-                        });
-                      },
-                    ),
-                    Text("other"),
-                  ],
+                Padding(
+                  padding: const EdgeInsets.only(top: 0),
+                  child: Row(
+                    children: <Widget>[
+                      Checkbox(
+                        value: other,
+                        onChanged: (bool newValue) {
+                          setState(() {
+                            other = newValue;
+                            if (other == true) {
+                              mapOfLabels[_current] = "other";
+                              noise = false;
+                              PVC = false;
+                              nsr = false;
+                              af = false;
+                              flutter = false;
+                              sa = false;
+                            } else
+                              mapOfLabels[_current] = "null";
+                          });
+                        },
+                      ),
+                      Text("Other"),
+                    ],
+                  ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(top: 30),
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Row(
+                    children: <Widget>[
+                      Checkbox(
+                        value: sa,
+                        onChanged: (bool newValue) {
+                          setState(() {
+                            sa = newValue;
+                            if (sa == true) {
+                              mapOfLabels[_current] = "sa";
+                              noise = false;
+                              PVC = false;
+                              nsr = false;
+                              af = false;
+                              flutter = false;
+                              other = false;
+                            } else
+                              mapOfLabels[_current] = "null";
+                          });
+                        },
+                      ),
+                      Text("SA"),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 2.0),
+                  child: Row(
+                    children: <Widget>[
+                      Checkbox(
+                        value: PVC,
+                        onChanged: (bool newValue) {
+                          setState(() {
+                            print(_current);
+                            PVC = newValue;
+
+                            if (PVC == true) {
+                              mapOfLabels[_current] = "PVC";
+
+                              af = false;
+                              nsr = false;
+                              noise = false;
+                              flutter = false;
+                              other = false;
+                              sa = false;
+                            } else
+                              mapOfLabels[_current] = "null";
+                          });
+                        },
+                      ),
+                      Text("PVC"),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
                   child: Row(
                     children: <Widget>[
                       Checkbox(
@@ -432,9 +564,13 @@ class _ShowImagesState extends State<ShowImages> {
                             if (nsr == true) {
                               mapOfLabels[_current] = "nsr";
                               af = false;
-                              other = false;
+                              PVC = false;
                               noise = false;
-                            }
+                              flutter = false;
+                              other = false;
+                              sa = false;
+                            } else
+                              mapOfLabels[_current] = "null";
                           });
                         },
                       ),
@@ -443,7 +579,7 @@ class _ShowImagesState extends State<ShowImages> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(top: 30),
+                  padding: const EdgeInsets.only(top: 2),
                   child: Row(
                     children: <Widget>[
                       Checkbox(
@@ -454,9 +590,13 @@ class _ShowImagesState extends State<ShowImages> {
                             if (noise == true) {
                               mapOfLabels[_current] = "noise";
                               af = false;
-                              other = false;
+                              PVC = false;
                               nsr = false;
-                            }
+                              flutter = false;
+                              other = false;
+                              sa = false;
+                            } else
+                              mapOfLabels[_current] = "null";
                           });
                         },
                       ),
@@ -465,7 +605,7 @@ class _ShowImagesState extends State<ShowImages> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(top: 40),
+                  padding: const EdgeInsets.only(top: 5),
                   child: Row(
                     children: <Widget>[
                       Checkbox(
@@ -476,13 +616,43 @@ class _ShowImagesState extends State<ShowImages> {
                             if (af == true) {
                               mapOfLabels[_current] = "af";
                               noise = false;
-                              other = false;
+                              PVC = false;
                               nsr = false;
-                            }
+                              flutter = false;
+                              other = false;
+                              sa = false;
+                            } else
+                              mapOfLabels[_current] = "null";
                           });
                         },
                       ),
                       Text("AF"),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 5),
+                  child: Row(
+                    children: <Widget>[
+                      Checkbox(
+                        value: flutter,
+                        onChanged: (bool newValue) {
+                          setState(() {
+                            flutter = newValue;
+                            if (flutter == true) {
+                              mapOfLabels[_current] = "flutter";
+                              noise = false;
+                              PVC = false;
+                              nsr = false;
+                              af = false;
+                              other = false;
+                              sa = false;
+                            } else
+                              mapOfLabels[_current] = "null";
+                          });
+                        },
+                      ),
+                      Text("A-Flutter"),
                     ],
                   ),
                 ),
@@ -491,13 +661,14 @@ class _ShowImagesState extends State<ShowImages> {
           ),
 
           Container(
-            padding: const EdgeInsets.only(top: 20),
+            padding: const EdgeInsets.only(top: 20, bottom: 10),
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 //mainAxisAlignment: alin,
                 children: [
-                  Text("Count= $_current",
+                  Text(
+                      "Index= ${_current + 1}/$total , Last saved at = $startIndex ",
                       style: TextStyle(height: 5, fontSize: 15))
                 ],
               ),
@@ -547,15 +718,13 @@ class _ShowImagesState extends State<ShowImages> {
 
     List<List<dynamic>> outer = List();
     for (int i = 0; i < mapofLabels.length; i++) {
-      if (mapOfLabels[i] != null) {
-        var str = imgList[i];
-        List<dynamic> yourListOfLists = [
-          imgList[i],
-          str.split("/images/")[1].split('?')[0],
-          mapOfLabels[i]
-        ];
-        outer.add(yourListOfLists);
-      }
+      var str = imgList[i];
+      List<dynamic> yourListOfLists = [
+        imgList[i],
+        str.split("/images/")[1].split('?')[0],
+        mapOfLabels[i]
+      ];
+      outer.add(yourListOfLists);
     }
 
     String csv = const ListToCsvConverter().convert(outer);
@@ -640,8 +809,6 @@ class _ShowImagesState extends State<ShowImages> {
     StorageReference storageReference;
     String uuid;
 
-    CircularProgressIndicator();
-
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     if (prefs.get("uuid") != null) uuid = prefs.get("uuid");
@@ -671,6 +838,9 @@ class _ShowImagesState extends State<ShowImages> {
     if (downloadUrl != null) {
       setState(() {
         isButtonenable = true;
+        prefs.setInt(patinetId, _current + 1);
+
+        startIndex = _current + 1;
       });
       _showCenterFlash(alignment: Alignment.center);
       file.delete();
